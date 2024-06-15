@@ -17,8 +17,36 @@ pipeline {
             steps {
                 // Build the project and run tests using Maven
                 withMaven(maven: 'Maven') {
-                    sh 'mvn clean install'
+                    sh 'mvn clean package spring-boot:run &'
                 }
+            }
+        }
+        stage('Wait for Application to Start') {
+            steps {
+                script {
+                    def appStarted = false
+                    for (int i = 0; i < 30; i++) {
+                        sleep 10
+                        if (sh(script: "curl -s http://localhost:7997/actuator/health | grep 'UP'", returnStatus: true) == 0) {
+                            appStarted = true
+                            break
+                        }
+                    }
+                    if (!appStarted) {
+                        error "Spring Boot application did not start in time."
+                    }
+                }
+            }
+        }
+
+        stage('Robot Tests') {
+            steps {
+                script{
+                    if (sh(script: 'robot --outputdir results employees.robot', returnStatus: true) != 0) {
+                        error "Robot Framework tests failed."
+                    }
+                }
+                step([$class: 'RobotPublisher', outputPath: 'results', reportFileName: 'report.html', logFileName: 'log.html', outputFileName: 'output.xml'])
             }
         }
     }

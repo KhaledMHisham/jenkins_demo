@@ -1,5 +1,6 @@
 package com.example.bank;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -9,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class EmployeeController {
 
     @GetMapping
-    public String getEmployee(){
-        return "Employees Success 200";
+    public ResponseEntity<String> getEmployee(){
+        return ResponseEntity.badRequest().body("Invalid Request");
     }
 }
